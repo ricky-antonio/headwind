@@ -14,7 +14,7 @@ const steps = [
     icon: '📊',
     title: 'We analyze the data',
     description: 'We pull 7 days of real historical departure records and crunch the numbers.',
-    image: 'https://images.unsplash.com/photo-1569154941061-e231b4aa8eda?auto=format&fit=crop&w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=600&q=80',
     alt: 'Airport terminal',
   },
   {
@@ -22,8 +22,8 @@ const steps = [
     icon: '✅',
     title: 'Get your verdict',
     description: 'Receive a LOW / MODERATE / HIGH risk score with AI-generated tips tailored to your route.',
-    image: 'https://images.unsplash.com/photo-1530521954074-e64f4810b5d3?auto=format&fit=crop&w=600&q=80',
-    alt: 'Airplane at sunset',
+    image: 'https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?auto=format&fit=crop&w=600&q=80',
+    alt: 'Airplane in flight',
   },
 ]
 
