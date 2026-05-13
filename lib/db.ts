@@ -7,11 +7,12 @@ function getClient() {
   return createClient(url, key)
 }
 
+// Cache key is (origin, destination, airline) — date is not included because
+// historical delay stats for a route don't change based on travel date.
 export async function getCachedResult(
   origin: string,
   destination: string,
   airline: string,
-  date: string,
 ): Promise<PredictionResult | null> {
   const supabase = getClient()
   const { data, error } = await supabase
@@ -20,7 +21,8 @@ export async function getCachedResult(
     .eq('origin', origin)
     .eq('destination', destination)
     .eq('airline', airline)
-    .eq('date', date)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
 
   if (error || !data) return null
@@ -31,16 +33,19 @@ export async function saveResult(result: Omit<PredictionResult, 'id' | 'createdA
   const supabase = getClient()
   const { data, error } = await supabase
     .from('predictions')
-    .insert({
-      origin: result.origin,
-      destination: result.destination,
-      airline: result.airline,
-      date: result.date,
-      risk_score: result.riskScore,
-      verdict: result.verdict,
-      narrative: result.narrative,
-      detail: result.detail,
-    })
+    .upsert(
+      {
+        origin: result.origin,
+        destination: result.destination,
+        airline: result.airline,
+        date: result.date,
+        risk_score: result.riskScore,
+        verdict: result.verdict,
+        narrative: result.narrative,
+        detail: result.detail,
+      },
+      { onConflict: 'origin,destination,airline' },
+    )
     .select()
     .single()
 

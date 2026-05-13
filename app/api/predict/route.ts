@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const cached = await getCachedResult(input.origin, input.destination, input.airline, input.date)
+    const cached = await getCachedResult(input.origin, input.destination, input.airline)
     if (cached) {
       await logSearch(cached.id)
       return NextResponse.json(cached)

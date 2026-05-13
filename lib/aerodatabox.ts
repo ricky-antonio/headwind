@@ -135,7 +135,7 @@ export async function fetchHistoricalFlights(
   const apiKey = process.env.RAPIDAPI_KEY
   if (!apiKey) throw new Error('RAPIDAPI_KEY is not set')
 
-  const windows = buildWindows(7) // 7 days × 2 windows = 14 calls max
+  const windows = buildWindows(1) // 1 day × 2 windows = 2 calls max
   const matchingFlights: AeroFlight[] = []
 
   for (let i = 0; i < windows.length; i++) {

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const mockMaybeSingle = vi.fn()
 const mockSingle = vi.fn()
 const mockInsert = vi.fn()
+const mockUpsert = vi.fn()
 const mockSelect = vi.fn()
 const mockEq = vi.fn()
 const mockOrder = vi.fn()
@@ -19,6 +20,7 @@ const chainable = {
   maybeSingle: mockMaybeSingle,
   single: mockSingle,
   insert: mockInsert,
+  upsert: mockUpsert,
   order: mockOrder,
   limit: mockLimit,
 }
@@ -40,7 +42,7 @@ describe('getCachedResult', () => {
   it('returns null on cache miss', async () => {
     mockMaybeSingle.mockResolvedValue({ data: null, error: null })
     const { getCachedResult } = await import('@/lib/db')
-    const result = await getCachedResult('JFK', 'LAX', 'AA', '2025-06-01')
+    const result = await getCachedResult('JFK', 'LAX', 'AA')
     expect(result).toBeNull()
   })
 
@@ -61,7 +63,7 @@ describe('getCachedResult', () => {
       error: null,
     })
     const { getCachedResult } = await import('@/lib/db')
-    const result = await getCachedResult('JFK', 'LAX', 'AA', '2025-06-01')
+    const result = await getCachedResult('JFK', 'LAX', 'AA')
     expect(result).not.toBeNull()
     expect(result!.id).toBe('abc-123')
     expect(result!.riskScore).toBe(45)
@@ -83,6 +85,7 @@ describe('saveResult', () => {
       detail: { stats: {}, tips: ['tip1', 'tip2', 'tip3'] },
       created_at: '2025-01-01T00:00:00Z',
     }
+    mockUpsert.mockReturnValue(chainable)
     mockSingle.mockResolvedValue({ data: insertedRow, error: null })
 
     const { saveResult } = await import('@/lib/db')
@@ -97,13 +100,14 @@ describe('saveResult', () => {
       detail: { stats: {} as any, tips: ['tip1', 'tip2', 'tip3'] },
     })
 
-    expect(mockInsert).toHaveBeenCalledWith(
+    expect(mockUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         origin: 'ORD',
         destination: 'MIA',
         risk_score: 70,
         verdict: 'high',
       }),
+      expect.objectContaining({ onConflict: 'origin,destination,airline' }),
     )
     expect(result.id).toBe('new-id')
   })
