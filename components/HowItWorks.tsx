@@ -39,8 +39,12 @@ export default function HowItWorks() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {steps.map((step) => (
-            <div key={step.number} className="group rounded-2xl overflow-hidden border bg-card shadow-sm hover:shadow-md transition-shadow">
+          {steps.map((step, i) => (
+            <div
+              key={step.number}
+              className="group rounded-2xl overflow-hidden border bg-card shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 animate-fade-in-up"
+              style={{ animationDelay: `${i * 120}ms` }}
+            >
               <div className="relative h-44 overflow-hidden">
                 <Image
                   src={step.image}
@@ -63,7 +67,7 @@ export default function HowItWorks() {
         </div>
 
         {/* Stats strip */}
-        <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+        <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center animate-fade-in [animation-delay:500ms]">
           {[
             { value: '130+', label: 'Airports covered' },
             { value: '50+', label: 'Airlines tracked' },

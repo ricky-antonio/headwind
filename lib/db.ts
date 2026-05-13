@@ -74,6 +74,7 @@ export async function getRecentSearches(): Promise<RecentSearch[]> {
       if (!p) return null
       return {
         id: row.id as string,
+        predictionId: p.id as string,
         origin: p.origin as string,
         destination: p.destination as string,
         airline: p.airline as string,

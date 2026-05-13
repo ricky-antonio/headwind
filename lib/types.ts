@@ -44,6 +44,7 @@ export interface PredictionResult {
 
 export interface RecentSearch {
   id: string
+  predictionId: string
   origin: string
   destination: string
   airline: string

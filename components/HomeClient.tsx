@@ -68,14 +68,14 @@ export default function HomeClient({ initialSearches }: HomeClientProps) {
         <SiteHeader transparent />
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 pb-16 pt-8">
-          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full mb-6 border border-white/20">
+          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full mb-6 border border-white/20 animate-fade-in-up">
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
             Powered by real flight data + AI
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-4 max-w-3xl">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight mb-4 max-w-3xl animate-fade-in-up" style={{ animationDelay: '120ms' }}>
             Know before<br className="hidden sm:block" /> you fly.
           </h1>
-          <p className="text-lg sm:text-xl text-white/80 max-w-xl leading-relaxed">
+          <p className="text-lg sm:text-xl text-white/80 max-w-xl leading-relaxed animate-fade-in-up" style={{ animationDelay: '240ms' }}>
             Check the delay risk for any flight route before you book.
             Historical data meets AI — so you can travel with confidence.
           </p>
@@ -84,7 +84,7 @@ export default function HomeClient({ initialSearches }: HomeClientProps) {
 
       {/* Search card — overlaps the hero bottom */}
       <div className="relative z-20 -mt-12 px-4 pb-8">
-        <div className="max-w-2xl mx-auto bg-card rounded-2xl shadow-2xl border p-6 sm:p-8">
+        <div className="max-w-2xl mx-auto bg-card rounded-2xl shadow-2xl border p-6 sm:p-8 animate-scale-in" style={{ animationDelay: '350ms' }}>
           <h2 className="text-lg font-semibold mb-5">Check a flight route</h2>
           <SearchForm onSubmit={handleSubmit} loading={loading} />
         </div>

@@ -42,7 +42,7 @@ export default function SummaryCard({ result }: SummaryCardProps) {
   }
 
   return (
-    <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+    <div className="rounded-2xl border bg-card shadow-sm overflow-hidden animate-scale-in">
       {/* Verdict header band */}
       <div className={`${config.bg} px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4 border-b`}>
         <div className="flex-1 space-y-1.5">

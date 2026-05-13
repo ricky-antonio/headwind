@@ -34,7 +34,7 @@ export default function RecentSearches({ searches }: RecentSearchesProps) {
         {searches.map((s) => (
           <li key={s.id}>
             <Link
-              href={`/results/${s.id}`}
+              href={`/results/${s.predictionId}`}
               className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
             >
               <div className="min-w-0">
