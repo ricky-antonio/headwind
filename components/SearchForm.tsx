@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import AirlineInput from './AirlineInput'
+import AirportInput from './AirportInput'
 import type { PredictInput } from '@/lib/types'
 
 interface SearchFormProps {
@@ -52,24 +53,14 @@ export default function SearchForm({ onSubmit, loading }: SearchFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field
-          id="origin"
-          label="Origin"
-          placeholder="JFK"
-          value={origin}
-          onChange={(v) => setOrigin(v.toUpperCase().slice(0, 3))}
-          error={errors.origin}
-          className="font-mono uppercase"
-        />
-        <Field
-          id="destination"
-          label="Destination"
-          placeholder="LAX"
-          value={destination}
-          onChange={(v) => setDestination(v.toUpperCase().slice(0, 3))}
-          error={errors.destination}
-          className="font-mono uppercase"
-        />
+        <div className="space-y-1">
+          <label htmlFor="origin" className="text-sm font-medium">Origin</label>
+          <AirportInput id="origin" placeholder="JFK" value={origin} onChange={setOrigin} error={errors.origin} />
+        </div>
+        <div className="space-y-1">
+          <label htmlFor="destination" className="text-sm font-medium">Destination</label>
+          <AirportInput id="destination" placeholder="LAX" value={destination} onChange={setDestination} error={errors.destination} />
+        </div>
         <div className="space-y-1">
           <label htmlFor="airline" className="text-sm font-medium">Airline</label>
           <AirlineInput value={airline} onChange={setAirline} error={errors.airline} />
