@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import AirlineInput from './AirlineInput'
 import type { PredictInput } from '@/lib/types'
 
 interface SearchFormProps {
@@ -69,14 +70,10 @@ export default function SearchForm({ onSubmit, loading }: SearchFormProps) {
           error={errors.destination}
           className="font-mono uppercase"
         />
-        <Field
-          id="airline"
-          label="Airline"
-          placeholder="American Airlines"
-          value={airline}
-          onChange={setAirline}
-          error={errors.airline}
-        />
+        <div className="space-y-1">
+          <label htmlFor="airline" className="text-sm font-medium">Airline</label>
+          <AirlineInput value={airline} onChange={setAirline} error={errors.airline} />
+        </div>
         <Field
           id="date"
           label="Date"
