@@ -135,10 +135,11 @@ export async function fetchHistoricalFlights(
   const apiKey = process.env.RAPIDAPI_KEY
   if (!apiKey) throw new Error('RAPIDAPI_KEY is not set')
 
-  const windows = buildWindows(7) // 7 days × 2 windows = 14 calls
+  const windows = buildWindows(7) // 7 days × 2 windows = 14 calls max
   const matchingFlights: AeroFlight[] = []
 
-  for (const { from, to } of windows) {
+  for (let i = 0; i < windows.length; i++) {
+    const { from, to } = windows[i]
     const flights = await fetchWindow(apiKey, origin, from, to)
     const matches = flights.filter(
       f =>
@@ -146,6 +147,13 @@ export async function fetchHistoricalFlights(
         matchesAirline(f, airline),
     )
     matchingFlights.push(...matches)
+
+    // After the first full day (2 windows), bail early if no matches at all —
+    // saves the remaining 12 calls for a route/airline combo with no data.
+    if (i === 1 && matchingFlights.length === 0) {
+      throw new NotFoundError('No historical data found for this route and airline.')
+    }
+
     // Small pause to respect per-second rate limit
     await new Promise(r => setTimeout(r, 150))
   }
