@@ -29,7 +29,7 @@ CI pipeline: `npm ci` → `type-check` → `test` → `build`
 - Tailwind CSS + shadcn/ui (install components as needed: `button`, `badge`, `input`, `skeleton`, `collapsible`)
 - Supabase (Postgres) for caching predictions and search history
 - AeroDataBox via RapidAPI for historical flight stats
-- Anthropic API (`claude-sonnet-4-20250514`) for risk narratives
+- Anthropic API (`claude-sonnet-4-6`) for risk narratives
 - `next-themes` for dark mode
 - Vitest + React Testing Library
 

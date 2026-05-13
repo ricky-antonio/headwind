@@ -1,87 +1,89 @@
 import { describe, it, expect } from 'vitest'
-import { parseDelayStats, computeRiskScore, computeVerdict } from '@/lib/aerodatabox'
+import { computeDelayStats, computeRiskScore, computeVerdict } from '@/lib/aerodatabox'
 
-const validApiResponse = {
-  statistics: {
-    totalFlights: 500,
-    onTimePercent: 72,
-    delayedPercent: 20,
-    cancelledPercent: 8,
-    avgDelayMinutes: 25,
-    delayReasons: {
-      weather: 30,
-      carrier: 40,
-      nas: 15,
-      security: 5,
-      lateAircraft: 10,
+function makeFlights(overrides: Array<Partial<{
+  scheduledUtc: string
+  revisedUtc: string
+  status: string
+  destIata: string
+  airlineIata: string
+  airlineName: string
+}>>) {
+  return overrides.map(o => ({
+    departure: {
+      scheduledTime: { utc: o.scheduledUtc ?? '2026-04-01 10:00Z' },
+      revisedTime: o.revisedUtc ? { utc: o.revisedUtc } : undefined,
     },
-    monthly_stats: [
-      { month: 'January', delayed_percent: 35 },
-      { month: 'February', delayed_percent: 20 },
-      { month: 'March', delayed_percent: 10 },
-      { month: 'April', delayed_percent: 5 },
-    ],
-    dataRangeStart: '2022-01-01',
-    dataRangeEnd: '2024-12-31',
-  },
+    arrival: { airport: { iata: o.destIata ?? 'LAX' } },
+    airline: { iata: o.airlineIata ?? 'AA', name: o.airlineName ?? 'American Airlines' },
+    status: o.status ?? 'Departed',
+  }))
 }
 
-describe('parseDelayStats', () => {
-  it('parses a valid API response into correct DelayStats shape', () => {
-    const stats = parseDelayStats(validApiResponse)
-    expect(stats.totalFlights).toBe(500)
-    expect(stats.onTimePercent).toBe(72)
-    expect(stats.delayedPercent).toBe(20)
-    expect(stats.cancelledPercent).toBe(8)
-    expect(stats.avgDelayMinutes).toBe(25)
-    expect(stats.delayReasons.weather).toBe(30)
-    expect(stats.delayReasons.carrier).toBe(40)
-    expect(stats.delayReasons.nas).toBe(15)
-    expect(stats.delayReasons.security).toBe(5)
-    expect(stats.delayReasons.lateAircraft).toBe(10)
-    expect(stats.dataRangeStart).toBe('2022-01-01')
-    expect(stats.dataRangeEnd).toBe('2024-12-31')
-  })
-
-  it('derives best and worst months from monthly stats', () => {
-    const stats = parseDelayStats(validApiResponse)
-    expect(stats.bestMonths).toContain('April')
-    expect(stats.worstMonths).toContain('January')
-  })
-
-  it('handles empty/missing fields without throwing', () => {
-    expect(() => parseDelayStats({})).not.toThrow()
-    expect(() => parseDelayStats(null)).not.toThrow()
-    expect(() => parseDelayStats({ statistics: {} })).not.toThrow()
-  })
-
-  it('returns zeros for missing numeric fields', () => {
-    const stats = parseDelayStats({})
+describe('computeDelayStats', () => {
+  it('returns zeros for empty flight list', () => {
+    const stats = computeDelayStats([])
     expect(stats.totalFlights).toBe(0)
-    expect(stats.avgDelayMinutes).toBe(0)
-    expect(stats.delayReasons.weather).toBe(0)
+    expect(stats.onTimePercent).toBe(0)
+  })
+
+  it('counts on-time flights (delay < 15 min)', () => {
+    const flights = makeFlights([
+      { revisedUtc: '2026-04-01 10:05Z' }, // 5 min — on time
+      { revisedUtc: '2026-04-01 10:05Z' }, // 5 min — on time
+      { revisedUtc: '2026-04-01 10:20Z' }, // 20 min — delayed
+    ])
+    const stats = computeDelayStats(flights)
+    expect(stats.totalFlights).toBe(3)
+    expect(stats.onTimePercent).toBe(67)
+    expect(stats.delayedPercent).toBe(33)
+    expect(stats.cancelledPercent).toBe(0)
+  })
+
+  it('counts cancelled flights correctly', () => {
+    const flights = makeFlights([
+      { status: 'Canceled' },
+      { status: 'CanceledUncertain' },
+      { revisedUtc: '2026-04-01 10:05Z' },
+    ])
+    const stats = computeDelayStats(flights)
+    expect(stats.cancelledPercent).toBe(67)
+    expect(stats.totalFlights).toBe(3)
+  })
+
+  it('computes average delay from delayed flights only', () => {
+    const flights = makeFlights([
+      { revisedUtc: '2026-04-01 10:30Z' }, // 30 min delay
+      { revisedUtc: '2026-04-01 10:50Z' }, // 50 min delay
+    ])
+    const stats = computeDelayStats(flights)
+    expect(stats.avgDelayMinutes).toBe(40)
+  })
+
+  it('handles missing revisedTime gracefully', () => {
+    const flights = makeFlights([{}, {}, {}]) // no revisedTime
+    expect(() => computeDelayStats(flights)).not.toThrow()
   })
 })
 
 describe('computeRiskScore', () => {
-  it('produces correct values at boundaries', () => {
-    const makeStats = (delayed: number, cancelled: number, avgDelay: number) =>
-      ({ delayedPercent: delayed, cancelledPercent: cancelled, avgDelayMinutes: avgDelay } as any)
-
-    expect(computeRiskScore(makeStats(0, 0, 0))).toBe(0)
-    expect(computeRiskScore(makeStats(20, 8, 25))).toBe(
-      Math.min(100, Math.round(20 * 0.5 + 8 * 1.5 + 25 / 3)),
-    )
-    expect(computeRiskScore(makeStats(100, 100, 300))).toBe(100)
+  it('produces correct values using the formula', () => {
+    const stats = { delayedPercent: 20, cancelledPercent: 8, avgDelayMinutes: 30 } as any
+    const expected = Math.min(100, Math.round(20 * 0.5 + 8 * 1.5 + 30 / 3))
+    expect(computeRiskScore(stats)).toBe(expected)
   })
 
   it('caps score at 100', () => {
     expect(computeRiskScore({ delayedPercent: 100, cancelledPercent: 100, avgDelayMinutes: 999 } as any)).toBe(100)
   })
+
+  it('returns 0 for perfect stats', () => {
+    expect(computeRiskScore({ delayedPercent: 0, cancelledPercent: 0, avgDelayMinutes: 0 } as any)).toBe(0)
+  })
 })
 
 describe('computeVerdict', () => {
-  it('maps correctly for low/moderate/high scores', () => {
+  it('maps correctly for low/moderate/high boundaries', () => {
     expect(computeVerdict(0)).toBe('low')
     expect(computeVerdict(32)).toBe('low')
     expect(computeVerdict(33)).toBe('moderate')

@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
     if (err instanceof NotFoundError) {
       return NextResponse.json({ error: err.message }, { status: 404 })
     }
+    console.error('[predict] error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

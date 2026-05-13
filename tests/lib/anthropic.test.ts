@@ -44,7 +44,7 @@ describe('generateRiskNarrative', () => {
     mockCreate.mockResolvedValue(validResponse)
     await generateRiskNarrative('JFK', 'LAX', 'AA', mockStats)
     expect(mockCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ model: 'claude-sonnet-4-20250514' }),
+      expect.objectContaining({ model: 'claude-sonnet-4-6' }),
     )
   })
 

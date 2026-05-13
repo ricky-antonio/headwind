@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { AIOutput, DelayStats } from './types'
 
-const MODEL = 'claude-sonnet-4-20250514'
+const MODEL = 'claude-sonnet-4-6'
 
 const SYSTEM_PROMPT = `You are a flight delay risk analyst. Respond with JSON only — no markdown, no preamble, no explanation.
 Your response must be a single JSON object with exactly two keys:
@@ -36,7 +36,8 @@ export async function generateRiskNarrative(
       messages: [{ role: 'user', content: buildUserPrompt(origin, destination, airline, stats) }],
     })
 
-    const text = message.content.find((b) => b.type === 'text')?.text ?? ''
+    const raw = message.content.find((b) => b.type === 'text')?.text ?? ''
+    const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
     const parsed = JSON.parse(text) as AIOutput
 
     if (typeof parsed.narrative !== 'string' || !Array.isArray(parsed.tips)) {
